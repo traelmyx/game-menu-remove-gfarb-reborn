@@ -1,0 +1,25 @@
+{
+	"schemaVersion": 1,
+	"id": "${id}",
+	"version": "${version}",
+	"name": "${name}",
+	"description": "Removes the \"Give Feedback\" and \"Report Bugs\" buttons from the pause menu. Based on Game Menu Remove GFARB by MORIMORI0317.",
+	"authors": ["traelmyx"],
+	"contributors": ["MORIMORI0317 (original mod)"],
+	"contact": {
+		"sources": "https://github.com/traelmyx/game-menu-remove-gfarb-reborn",
+		"issues": "https://github.com/traelmyx/game-menu-remove-gfarb-reborn/issues"
+	},
+	"license": "LGPL-3.0",
+	"icon": "assets/gamemenuremovegfarb/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": ["net.morimori0317.gmrg.fabric.GameMenuRemoveGFARBFabric"]
+	},
+	"mixins": ["gamemenuremovegfarb.mixins.json"],
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "${mc_dep}",
+		"java": ">=${java}"
+	}
+}

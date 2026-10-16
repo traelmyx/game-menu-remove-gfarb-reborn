@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.morimori0317.gmrg.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "GridLayoutRowHelperMixin",
+    "PauseScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
