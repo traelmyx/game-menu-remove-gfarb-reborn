@@ -15,6 +15,9 @@ import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
+import net.minecraft.server.ServerLinks;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,23 +79,36 @@ public final class ClientSmoke {
                     if (ticks == 80) {
                         Screenshot.grab(mc.gameDirectory, "pause-menu.png", mc.getMainRenderTarget(), msg -> {});
                     }
-                    if (ticks >= 100) {
-                        if (!(mc.screen instanceof PauseScreen pause)) {
-                            fail("pause screen not open: " + mc.screen);
-                            return;
-                        }
-                        List<String> keys = new ArrayList<>();
-                        for (var child : pause.children()) {
-                            if (child instanceof AbstractWidget w && w.visible && w.getMessage().getContents() instanceof TranslatableContents t) {
-                                keys.add(t.getKey());
-                            }
-                        }
+                    if (ticks == 100) {
+                        List<String> keys = visibleKeys(mc);
                         System.out.println("[clientsmoke] visible pause buttons: " + keys);
                         if (keys.contains("menu.sendFeedback") || keys.contains("menu.reportBugs") || keys.contains("menu.feedback")) {
                             fail("feedback buttons still visible: " + keys);
                         }
                         if (!keys.contains("menu.options") || !keys.contains("menu.returnToGame")) {
                             fail("pause menu lost its other buttons: " + keys);
+                        }
+                        // now act like a server that sends links: vanilla swaps the feedback pair for "Feedback..." + "Server Links"
+                        var server = mc.getSingleplayerServer();
+                        server.execute(() -> server.getPlayerList().getPlayers().get(0).connection.send(new ClientboundServerLinksPacket(
+                            new ServerLinks(List.of(ServerLinks.Entry.knownType(ServerLinks.KnownLinkType.BUG_REPORT, URI.create("https://example.com/bugs")))).untrust())));
+                    }
+                    if (ticks == 130) {
+                        mc.setScreen(new PauseScreen(true));
+                    }
+                    if (ticks == 160) {
+                        Screenshot.grab(mc.gameDirectory, "pause-menu-server-links.png", mc.getMainRenderTarget(), msg -> {});
+                    }
+                    if (ticks >= 170) {
+                        List<String> keys = visibleKeys(mc);
+                        System.out.println("[clientsmoke] visible pause buttons with server links: " + keys);
+                        if (keys.contains("menu.feedback") || !keys.contains("menu.server_links")) {
+                            fail("server links layout wrong: " + keys);
+                        }
+                        for (var child : mc.screen.children()) {
+                            if (child instanceof AbstractWidget w && w.getMessage().getContents() instanceof TranslatableContents t && t.getKey().equals("menu.server_links") && w.getWidth() != 204) {
+                                fail("Server Links button is " + w.getWidth() + " wide");
+                            }
                         }
                         Files.writeString(mc.gameDirectory.toPath().resolve("smoke-ok"), "ok\n");
                         stage = 3;
@@ -113,6 +129,20 @@ public final class ClientSmoke {
         mc.createWorldOpenFlows().createFreshLevel("smoke", settings, new WorldOptions(0L, false, false),
             registries -> registries.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.FLAT).value().createWorldDimensions(),
             mc.screen);
+    }
+
+    private static List<String> visibleKeys(Minecraft mc) {
+        List<String> keys = new ArrayList<>();
+        if (!(mc.screen instanceof PauseScreen pause)) {
+            fail("pause screen not open: " + mc.screen);
+            return keys;
+        }
+        for (var child : pause.children()) {
+            if (child instanceof AbstractWidget w && w.visible && w.getMessage().getContents() instanceof TranslatableContents t) {
+                keys.add(t.getKey());
+            }
+        }
+        return keys;
     }
 
     public static void fail(String why) {
