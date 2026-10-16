@@ -62,7 +62,7 @@ jobs:
           args="--stacktrace -Porg.gradle.java.installations.fromEnv=JAVA_HOME_21_X64,JAVA_HOME_25_X64 :${{ matrix.node }}:runProductionClientGameTest"
           case "${{ matrix.node }}" in
             *-neoforge) xvfb-run -a -s "-screen 0 1920x1080x24" ./gradlew $args ;;
-            *) ./gradlew $args ;;
+            *) ./gradlew $args && ./gradlew $args -PwithModMenu ;;
           esac
       - if: always()
         uses: actions/upload-artifact@v7
@@ -70,6 +70,8 @@ jobs:
           name: client-${{ matrix.node }}
           path: |
             versions/${{ matrix.node }}/build/run/prodClientGameTest/screenshots/
+            versions/${{ matrix.node }}/build/run/prodClientGameTestModMenu/screenshots/
+            versions/${{ matrix.node }}/build/run/prodClientGameTestModMenu/logs/
             versions/${{ matrix.node }}/build/run/prodClientGameTest/logs/
             versions/${{ matrix.node }}/build/run/prodClientGameTest/crash-reports/
             versions/${{ matrix.node }}/build/run/clientSmoke/screenshots/

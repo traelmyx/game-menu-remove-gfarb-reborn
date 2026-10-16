@@ -18,6 +18,8 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
 import net.minecraft.server.ServerLinks;
 import java.net.URI;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.morimori0317.gmrg.GameMenuRemoveGFARB;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,6 +90,9 @@ public final class ClientSmoke {
                         if (!keys.contains("menu.options") || !keys.contains("menu.returnToGame")) {
                             fail("pause menu lost its other buttons: " + keys);
                         }
+                        if (GameMenuRemoveGFARB.hideOnly && keys.stream().noneMatch(k -> k.startsWith("modmenu"))) {
+                            fail("Mod Menu's button is missing: " + keys);
+                        }
                         // now act like a server that sends links: vanilla swaps the feedback pair for "Feedback..." + "Server Links"
                         var server = mc.getSingleplayerServer();
                         server.execute(() -> server.getPlayerList().getPlayers().get(0).connection.send(new ClientboundServerLinksPacket(
@@ -105,7 +110,7 @@ public final class ClientSmoke {
                         if (keys.contains("menu.feedback") || !keys.contains("menu.server_links")) {
                             fail("server links layout wrong: " + keys);
                         }
-                        for (var child : mc.screen.children()) {
+                        for (var child : GameMenuRemoveGFARB.hideOnly ? List.<GuiEventListener>of() : mc.screen.children()) {
                             if (child instanceof AbstractWidget w && w.getMessage().getContents() instanceof TranslatableContents t && t.getKey().equals("menu.server_links") && w.getWidth() != 204) {
                                 fail("Server Links button is " + w.getWidth() + " wide");
                             }

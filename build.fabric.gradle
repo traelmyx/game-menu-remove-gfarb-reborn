@@ -11,6 +11,7 @@ group = project.property('mod.group')
 base.archivesName = project.property('mod.id')
 
 repositories {
+	maven { name = 'Terraformers'; url = 'https://maven.terraformersmc.com/releases/' }
 }
 
 loom {
@@ -59,6 +60,10 @@ dependencies {
 		implementation "net.fabricmc.fabric-api:fabric-api:${project.property('deps.fabric_api')}"
 	}
 	productionRuntimeMods "net.fabricmc.fabric-api:fabric-api:${project.property('deps.fabric_api')}"
+	// -PwithModMenu: run the client smoke test next to Mod Menu, which anchors its own button to the feedback buttons
+	if (project.hasProperty('withModMenu')) {
+		productionRuntimeMods "com.terraformersmc:modmenu:${project.property('deps.modmenu')}"
+	}
 }
 
 java {
@@ -143,14 +148,14 @@ tasks.register('runProductionClientGameTest', net.fabricmc.loom.task.prod.Client
 		jvmArgs.add('-Dfabric.client.gametest.disableNetworkSynchronizer=true')
 	} else {
 		jvmArgs.add('-Dsmoketest=true')
-		def marker = layout.buildDirectory.file('run/prodClientGameTest/smoke-ok')
+		def marker = layout.buildDirectory.file(project.hasProperty('withModMenu') ? 'run/prodClientGameTestModMenu/smoke-ok' : 'run/prodClientGameTest/smoke-ok')
 		doFirst { project.delete(marker) }
 		doLast {
 			if (!marker.get().asFile.exists()) throw new GradleException('client smoke test did not report success')
 		}
 	}
 	jvmArgs.add('-Xmx2G')
-	runDir = layout.buildDirectory.dir('run/prodClientGameTest')
+	runDir = layout.buildDirectory.dir(project.hasProperty('withModMenu') ? 'run/prodClientGameTestModMenu' : 'run/prodClientGameTest')
 	javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(javaVersion) }
 }
 
