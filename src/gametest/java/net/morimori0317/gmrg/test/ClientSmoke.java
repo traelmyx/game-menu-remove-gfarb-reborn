@@ -1,16 +1,8 @@
 package net.morimori0317.gmrg.test;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.LevelSettings;
-import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.levelgen.presets.WorldPresets;
 
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.PauseScreen;
@@ -57,29 +49,29 @@ public final class ClientSmoke {
         try {
             switch (stage) {
                 case 0 -> {
-                    Screen screen = mc.screen;
-                    if (screen != null && mc.getOverlay() == null && ++ticks >= 20) {
+                    Screen screen = SmokeCompat.screen(mc);
+                    if (screen != null && SmokeCompat.overlayHidden(mc) && ++ticks >= 20) {
                         if (screen.getClass().getSimpleName().equals("LoadingErrorScreen")) {
                             fail("mod loading errors");
                         }
                         ticks = 0;
                         mc.options.tutorialStep = net.minecraft.client.tutorial.TutorialSteps.NONE;
-                        createWorld(mc);
+                        SmokeCompat.createFlatWorld(mc, GameType.SURVIVAL);
                         stage = 1;
                     }
                 }
                 case 1 -> {
-                    if (mc.level != null && mc.player != null && mc.screen == null) {
+                    if (mc.level != null && mc.player != null && SmokeCompat.screen(mc) == null) {
                         stage = 2;
                     }
                 }
                 case 2 -> {
                     ticks++;
                     if (ticks == 40) {
-                        mc.setScreen(new PauseScreen(true));
+                        SmokeCompat.setScreen(mc, new PauseScreen(true));
                     }
                     if (ticks == 80) {
-                        Screenshot.grab(mc.gameDirectory, "pause-menu.png", mc.getMainRenderTarget(), msg -> {});
+                        SmokeCompat.screenshot(mc, "pause-menu.png");
                     }
                     if (ticks == 100) {
                         List<String> keys = visibleKeys(mc);
@@ -99,10 +91,10 @@ public final class ClientSmoke {
                             new ServerLinks(List.of(ServerLinks.Entry.knownType(ServerLinks.KnownLinkType.BUG_REPORT, URI.create("https://example.com/bugs")))).untrust())));
                     }
                     if (ticks == 130) {
-                        mc.setScreen(new PauseScreen(true));
+                        SmokeCompat.setScreen(mc, new PauseScreen(true));
                     }
                     if (ticks == 160) {
-                        Screenshot.grab(mc.gameDirectory, "pause-menu-server-links.png", mc.getMainRenderTarget(), msg -> {});
+                        SmokeCompat.screenshot(mc, "pause-menu-server-links.png");
                     }
                     if (ticks >= 170) {
                         List<String> keys = visibleKeys(mc);
@@ -110,7 +102,7 @@ public final class ClientSmoke {
                         if (keys.contains("menu.feedback") || !keys.contains("menu.server_links")) {
                             fail("server links layout wrong: " + keys);
                         }
-                        for (var child : GameMenuRemoveGFARB.hideOnly ? List.<GuiEventListener>of() : mc.screen.children()) {
+                        for (var child : GameMenuRemoveGFARB.hideOnly ? List.<GuiEventListener>of() : SmokeCompat.screen(mc).children()) {
                             if (child instanceof AbstractWidget w && w.getMessage().getContents() instanceof TranslatableContents t && t.getKey().equals("menu.server_links") && w.getWidth() != 204) {
                                 fail("Server Links button is " + w.getWidth() + " wide");
                             }
@@ -129,17 +121,10 @@ public final class ClientSmoke {
         }
     }
 
-    private static void createWorld(Minecraft mc) {
-        LevelSettings settings = new LevelSettings("smoke", GameType.SURVIVAL, false, Difficulty.PEACEFUL, true, new GameRules(), WorldDataConfiguration.DEFAULT);
-        mc.createWorldOpenFlows().createFreshLevel("smoke", settings, new WorldOptions(0L, false, false),
-            registries -> registries.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.FLAT).value().createWorldDimensions(),
-            mc.screen);
-    }
-
     private static List<String> visibleKeys(Minecraft mc) {
         List<String> keys = new ArrayList<>();
-        if (!(mc.screen instanceof PauseScreen pause)) {
-            fail("pause screen not open: " + mc.screen);
+        if (!(SmokeCompat.screen(mc) instanceof PauseScreen pause)) {
+            fail("pause screen not open: " + SmokeCompat.screen(mc));
             return keys;
         }
         for (var child : pause.children()) {
