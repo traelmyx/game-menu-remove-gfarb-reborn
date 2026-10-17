@@ -5,11 +5,7 @@
 	"name": "Game Menu Remove GFARB GameTests",
 	"environment": "*",
 	"entrypoints": {
-		"fabric-gametest": [
-			"net.morimori0317.gmrg.test.fabric.FabricGameTests"
-		],
-		"client": [
-			"net.morimori0317.gmrg.test.fabric.FabricClientSmoke"
-		]
+		"fabric-gametest": ["net.morimori0317.gmrg.test.fabric.FabricGameTests"],
+		"client": ["net.morimori0317.gmrg.test.fabric.FabricClientSmoke"]
 	}
 }
