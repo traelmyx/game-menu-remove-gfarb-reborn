@@ -99,7 +99,12 @@ public final class ClientSmoke {
                     if (ticks >= 170) {
                         List<String> keys = visibleKeys(mc);
                         System.out.println("[clientsmoke] visible pause buttons with server links: " + keys);
+                        //? if >=26 {
+                        /*// 26.x moved Server Links out of the pause menu; only check the feedback icons stay gone
+                        if (keys.contains("menu.feedback") || keys.contains("menu.sendFeedback") || keys.contains("menu.reportBugs")) {
+                        *///?} else {
                         if (keys.contains("menu.feedback") || !keys.contains("menu.server_links")) {
+                        //?}
                             fail("server links layout wrong: " + keys);
                         }
                         for (var child : GameMenuRemoveGFARB.hideOnly ? List.<GuiEventListener>of() : SmokeCompat.screen(mc).children()) {

@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Since 1.21.11 the feedback buttons are icons in a row under Advancements and Statistics. */
+/** In 26.x the feedback buttons are icons in a row under Advancements and Statistics. */
 @Mixin(LinearLayout.class)
 public abstract class LinearLayoutMixin {
     @Inject(method = "addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;", at = @At("HEAD"), cancellable = true)
